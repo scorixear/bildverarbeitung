@@ -10,8 +10,26 @@ def doG(img):
 def laplace(img):
   return kernel_transform(img, np.array([[0,1,0],[1,-4,1],[0,1,0]]))
 
+def sobel(img):
+  gx = (1/8)*np.array([[1,0,-1],[2,0,-2],[1,0,-1]])
+  gy = (1/8)*np.array([[1,2,1],[0,0,0],[-1,-2,-1]])
+  imggx = kernel_transform(img, gx)
+  imggy = kernel_transform(img, gy)
+  return addImages([imggx, imggy])
+
+
 def kernel_transform(img, kernel):
   return cv.filter2D(img, -1, kernel)
+
+def addImages(images):
+  for y in range(images[0].shape[0]):
+    for x in range(images[0].shape[1]):
+      val = 0
+      for i in range(len(images)):
+        val += images[i][y,x] * images[i][y,x]
+      images[0][y,x] = int(np.sqrt(val))
+  return images[0]
+
 
 def findEdgePixel(img, x, y, threshold):
   for j in range(x, img.shape[1]):
@@ -19,14 +37,14 @@ def findEdgePixel(img, x, y, threshold):
       return j, y
   return None, None
 
-EDGE_FIND_X = 20
+EDGE_FIND_X = 0
 EDGE_FIND_Y = 100
 EDGE_THRESHOLD = 200
 PICTURE_INPUT = "Rauschbild.png"
-EDGE_LOW_FILTER = 254
+EDGE_LOW_FILTER = 50
 EDGE_HIGH_FILTER = 255
 USE_8_NEIGHBOURS = False
-FILTER_FUNCTION = doG
+FILTER_FUNCTION = sobel
 INVERT_PICTURE= False
 
 class Pixel:
@@ -128,10 +146,10 @@ def main():
   #edge_img = img.copy().astype(int)
   plt.subplot(231)
   plt.imshow(img, cmap="gray")
-  plt.title("Orig")
+  plt.title("Original")
   plt.subplot(232)
   plt.imshow(edge_img, cmap="gray")
-  plt.title("LoG")
+  plt.title(FILTER_FUNCTION.__name__)
   
   
   x,y = findEdgePixel(edge_img, EDGE_FIND_X, EDGE_FIND_Y, EDGE_THRESHOLD)
@@ -139,7 +157,7 @@ def main():
     plt.subplot(233)
     painted_img = paint_edges(edge_img, x, y, EDGE_THRESHOLD)
     plt.imshow(painted_img)
-    plt.title("Edge Detected")
+    plt.title("Result")
   else:
     print("No edge found")
   plt.show()
