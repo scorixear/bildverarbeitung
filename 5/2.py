@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
 
-
 def loG(img):
   return kernel_transform(img, (1/16)*np.array([[0,1,2,1,0],[1,0,-2,0,1],[2,-2,-8,-2,2],[1,0,-2,0,1],[0,1,2,1,0]]))
 def doG(img):
@@ -24,8 +23,8 @@ EDGE_FIND_X = 20
 EDGE_FIND_Y = 100
 EDGE_THRESHOLD = 200
 PICTURE_INPUT = "Rauschbild.png"
-EDGE_LOW_FILTER = 255
-EDGE_HIGH_FILTER = 256
+EDGE_LOW_FILTER = 254
+EDGE_HIGH_FILTER = 255
 USE_8_NEIGHBOURS = False
 FILTER_FUNCTION = doG
 INVERT_PICTURE= False
@@ -99,6 +98,7 @@ def paint_edges(img, x, y, threshold):
       continue
     # if we completed the loop
     if nextPixel == edges_visited[0] and len(edges_visited) > 5:
+      print("Completed Loop")
       break
     # if we have a neighbour and its position is valid
     if is_in_bounds(img, nextPixel):
@@ -106,12 +106,13 @@ def paint_edges(img, x, y, threshold):
       if nextPixel not in edges_visited:
         # if the neighbour is above the threshold
         if img[nextPixel.y, nextPixel.x] > threshold:
-          # paint the neighbour
-          painted_img[nextPixel.y, nextPixel.x] = np.array([255,0,0])
           # add the neighbour to the list of visited pixels
           edges_visited.append(nextPixel)
-          # get the next neighbour
+    # get the next neighbour
     nextPixel = edges_visited[-1].get_next_neighbour()
+  for edge in edges_visited:
+    # paint the neighbour
+    painted_img[edge.y, edge.x] = np.array([255,0,0])
   return painted_img
 
 def main():
