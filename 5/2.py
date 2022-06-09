@@ -53,6 +53,10 @@ USE_8_NEIGHBOURS = False
 # the edge detection filter method
 FILTER_FUNCTION = sobel
 INVERT_PICTURE= False
+# use the Fill Method instead
+USE_FILL_EDGE = False
+# overwrite any edge detection filter and use original image instead
+OVERWRITE_EDGE_DETECTION = False
 
 # pixel class that keeps track of its visited neighbours
 class Pixel:
@@ -86,6 +90,25 @@ def is_in_bounds(img, pixel):
   if pixel.x < 0 or pixel.x >= img.shape[1] or pixel.y < 0 or pixel.y >= img.shape[0]:
     return False
   return True
+
+def fill_edges(img, x, y, threshold):
+  painted_img = np.zeros((img.shape[0], img.shape[1], 3)).astype(int)
+  for i in range(img.shape[0]):
+    for j in range(img.shape[1]):
+      painted_img[i,j] = np.array([img[i,j], img[i,j], img[i,j]])
+   # set start pixel to red
+  stack = [Pixel(x,y)]
+  edge = []
+  while len(stack) > 0:
+    pixel = stack.pop()
+    if is_in_bounds(img, pixel) and img[pixel.y, pixel.x] > threshold and pixel not in edge:
+      edge.append(pixel)
+      for neighbour in pixel.neighbours:
+        stack.append(Pixel(neighbour[0], neighbour[1]))
+  for pixel in edge:
+    painted_img[pixel.y, pixel.x] = np.array([255, 0, 0])
+  return painted_img
+  
 
 def paint_edges(img, x, y, threshold):
   # create new image that is rgb and transform img to rgb
@@ -173,6 +196,8 @@ def main():
   else:
     edge_img = cv.threshold(edge_img, EDGE_LOW_FILTER, EDGE_HIGH_FILTER, cv.THRESH_BINARY)[1].astype(int)
   # plot the original and edge picture
+  if OVERWRITE_EDGE_DETECTION:
+    edge_img = img.copy()
   plt.subplot(231)
   plt.imshow(img, cmap="gray")
   plt.title("Original")
@@ -186,7 +211,11 @@ def main():
   if x is not None and y is not None:
     # paint the edge pixels and show the result
     plt.subplot(233)
-    painted_img = paint_edges(edge_img, x, y, EDGE_THRESHOLD)
+    painted_img = []
+    if USE_FILL_EDGE:
+      painted_img = fill_edges(edge_img, x, y, EDGE_THRESHOLD)
+    else:
+      painted_img = paint_edges(edge_img, x, y, EDGE_THRESHOLD)
     plt.imshow(painted_img)
     plt.title("Result")
   else:
