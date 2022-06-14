@@ -1,4 +1,3 @@
-#%%
 import sys, os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,10 +24,12 @@ def main():
   for i in range(len(images)-1, 0, -1):
     resize = cv.resize(images[i], [laplaceImages[i-1].shape[1], laplaceImages[i-1].shape[0]])
     laplaceImage = laplaceImages[i-1]
-    reconstructed = (resize + laplaceImage)/2
+    lMin = laplaceImage.min()
+    lMax = laplaceImage.max()
+    
+    mappedLaplaceImage = np.interp(laplaceImage, [lMin, lMax], [0, 255])
+    reconstructed = (resize + mappedLaplaceImage)/2
     reconstructedImages.append((resize, laplaceImage, reconstructed))
-  bigResize = cv.resize(images[-1], [laplaceImages[0].shape[1], laplaceImages[0].shape[0]])
-  reconstructedImages.append((bigResize, laplaceImages[0], (bigResize + laplaceImages[0])/2))
   imageCounter = 1
   for i in range(len(images)):
     plt.subplot(plt_rows, plt_columns,imageCounter)
@@ -60,6 +61,3 @@ def main():
   
 if __name__ == "__main__":
   main()
-
-
-# %%
