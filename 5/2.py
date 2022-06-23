@@ -35,7 +35,7 @@ def findEdgePixel(img, x, y, threshold):
   for j in range(x, img.shape[1]):
     if img[y,j] > threshold:
       return j, y
-  return None, None
+  raise Exception("")
 
 # start X index to search for edge
 EDGE_FIND_X = 0
