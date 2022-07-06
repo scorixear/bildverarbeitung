@@ -24,12 +24,15 @@ def kernel(img, matrix):
       if fits:
         newimg[i,j] = 1
   return newimg.astype('uint8')
+def cv_kernel(img, matrix):
+  matrix[matrix == None] = -1
+  return cv.morphologyEx(img, cv.MORPH_HITMISS, matrix.astype(int))
 
 def thin(img):
   #kernel = np.array([[0,None,1],[0,1,1],[0,None,1]])
   #hitandmis = cv.morphologyEx(img, cv.MORPH_HITMISS, kernel)
   #newimg = cv.bitwise_and(img, cv.bitwise_not(hitandmis))
-  newimg = cv.bitwise_and(img, cv.bitwise_not(kernel(img, np.array([[0,None,1],[0,1,1],[0,None,1]]))))
+  newimg = cv.bitwise_and(img,    cv.bitwise_not(kernel(img, np.array([[0,None,1],[0,1,1],[0,None,1]]))))
   newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[0,0,None],[0,1,1],[None,1,1]]))))
   newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[0,0,0],[None,1,None],[1,1,1]]))))
   newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[None,0,0],[1,1,0],[1,1,None]]))))
