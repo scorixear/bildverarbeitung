@@ -42,15 +42,18 @@ def thin(img):
 
 
 def main():
-  img = plt.imread(os.path.join(os.path.dirname(__file__), 'skeleton.png'))
+  img = plt.imread(os.path.join(os.path.dirname(__file__), 'cat.jpg'))
   if img.ndim == 3:
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
   if img.max() <= 1:
     img = img * 255
   img = img.astype('uint8')
 
-  oldPic = np.where(img > 127, 1, 0).astype('uint8')
   binary = np.where(img > 127, 1, 0).astype('uint8')
+  binary = cv.bitwise_not(binary)
+  binary = cv.erode(binary, np.ones((3,3), np.uint8), iterations=3)
+  oldPic = binary.copy()
+  
   
   thinned = thin(oldPic)
   zeros = cv.countNonZero(thinned)
