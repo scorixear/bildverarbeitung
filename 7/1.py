@@ -11,6 +11,7 @@ def main():
   if img.max() <= 1:
     img = img * 255
   img = img.astype('uint8')
+  
 
   binary = np.where(img > 127, 1, 0).astype('uint8')
   eroded = cv.erode(binary, np.ones((3,3)).astype('uint8'))

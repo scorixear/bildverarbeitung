@@ -1,6 +1,7 @@
 import sys, os
 from tabnanny import check
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import numpy as np
 import cv2 as cv
 
@@ -25,33 +26,38 @@ def kernel(img, matrix):
         newimg[i,j] = 1
   return newimg.astype('uint8')
 def cv_kernel(img, matrix):
-  matrix[matrix == None] = -1
+
+  matrix[matrix == 0] = -1
+  matrix[matrix == None] = 0
   return cv.morphologyEx(img, cv.MORPH_HITMISS, matrix.astype(int))
 
 def thin(img):
-  newimg = cv.bitwise_and(img,    cv.bitwise_not(kernel(img, np.array([[0,None,1],[0,1,1],[0,None,1]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[0,0,None],[0,1,1],[None,1,1]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[0,0,0],[None,1,None],[1,1,1]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[None,0,0],[1,1,0],[1,1,None]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[1,None,0],[1,1,0],[1,None,0]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[1,1,None],[1,1,0],[None,0,0]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[1,1,1],[None,1,None],[0,0,0]]))))
-  newimg = cv.bitwise_and(newimg, cv.bitwise_not(kernel(img, np.array([[None,1,1],[0,1,1],[0,0,None]]))))
+  newimg = cv.bitwise_and(img,    cv.bitwise_not(cv_kernel(img, np.array([[0,None,1],[0,1,1],[0,None,1]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[0,0,None],[0,1,1],[None,1,1]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[0,0,0],[None,1,None],[1,1,1]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[None,0,0],[1,1,0],[1,1,None]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[1,None,0],[1,1,0],[1,None,0]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[1,1,None],[1,1,0],[None,0,0]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[1,1,1],[None,1,None],[0,0,0]]))))
+  newimg = cv.bitwise_and(newimg, cv.bitwise_not(cv_kernel(img, np.array([[None,1,1],[0,1,1],[0,0,None]]))))
   return newimg
     
 
 
 def main():
-  img = plt.imread(os.path.join(os.path.dirname(__file__), 'skeleton.png'))
+  img = plt.imread(os.path.join(os.path.dirname(__file__), 'cat.jpg'))
   if img.ndim == 3:
     img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
   if img.max() <= 1:
     img = img * 255
   img = img.astype('uint8')
 
-  binary = np.where(img > 127, 1, 0).astype('uint8')
-  # binary = cv.bitwise_not(binary)
-  binary = cv.erode(binary, np.ones((3,3), np.uint8), iterations=3)
+  binary = np.where(img > 127, 0, 1).astype('uint8')
+  mpimg.imsave(os.path.join(os.path.dirname(__file__), 'binary1.png'), binary, cmap='gray')
+  #binary = cv.morphologyEx(binary, cv.MORPH_OPEN, np.ones((3,3), dtype='uint8'), iterations=3)
+  #binary = cv.morphologyEx(binary, cv.MORPH_CLOSE, np.ones((3,3), dtype='uint8'), iterations=3)
+  #binary = cv.bitwise_not(binary)
+  #binary = cv.erode(binary, np.ones((3,3), np.uint8), iterations=3)
   oldPic = binary.copy()
   
   
@@ -65,7 +71,7 @@ def main():
     prevZeros = zeros
     zeros = cv.countNonZero(thinned)
     
-    
+  mpimg.imsave(os.path.join(os.path.dirname(__file__), 'thinned1.png'), oldPic, cmap='gray')
   plt.subplot(121)
   plt.imshow(binary, cmap="gray")
   plt.title("Original")
