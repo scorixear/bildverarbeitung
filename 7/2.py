@@ -26,7 +26,6 @@ def kernel(img, matrix):
         newimg[i,j] = 1
   return newimg.astype('uint8')
 def cv_kernel(img, matrix):
-
   matrix[matrix == 0] = -1
   matrix[matrix == None] = 0
   return cv.morphologyEx(img, cv.MORPH_HITMISS, matrix.astype(int))
